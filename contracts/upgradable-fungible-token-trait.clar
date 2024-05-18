@@ -2,6 +2,8 @@
 
 (define-trait upgradable-fungible-token-trait
   (
+    (get-current-implementation () (response principal bool))
+    
     (is-current-implementation (principal) (response bool uint))
 
     ;; Transfer from the caller to a new principal

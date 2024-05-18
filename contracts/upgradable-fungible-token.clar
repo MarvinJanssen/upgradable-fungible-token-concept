@@ -16,6 +16,10 @@
 
 ;; upgradable-fungible-token-trait implementation
 
+(define-read-only (get-current-implementation)
+	(ok (var-get current-logic-implementation))
+)
+
 (define-read-only (is-current-implementation (implementation principal))
 	(ok (asserts! (is-eq implementation (var-get current-logic-implementation)) err-not-current-implementation))
 )

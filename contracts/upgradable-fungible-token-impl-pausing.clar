@@ -1,12 +1,14 @@
-(impl-trait .upgradable-fungible-token-logic-trait.upgradable-fungible-token-logic-trait)
+(impl-trait .upgradable-fungible-token-impl-trait.upgradable-fungible-token-impl-trait)
 
 (define-constant err-unauthorised (err u200))
 (define-constant err-no-price (err u201))
+(define-constant err-paused (err u202))
 
-;; upgradable-token-logic-trait implementation
+;; upgradable-token-impl-trait implementation
 
 (define-public (transfer (amount uint) (sender principal) (recipient principal) (original-caller principal))
 	(begin
+		(asserts! (not (is-paused)) err-paused)
 		(asserts! (or (is-eq sender tx-sender) (is-eq sender original-caller)) err-unauthorised)
 		(contract-call? .upgradable-fungible-token impl-transfer amount sender recipient)
 	)
@@ -14,6 +16,7 @@
 
 (define-public (transfer-memo (amount uint) (sender principal) (recipient principal) (memo (buff 34)) (original-caller principal))
 	(begin
+		(asserts! (not (is-paused)) err-paused)
 		(asserts! (or (is-eq sender tx-sender) (is-eq sender original-caller)) err-unauthorised)
 		(print memo)
 		(contract-call? .upgradable-fungible-token impl-transfer amount sender recipient)
@@ -46,6 +49,10 @@
 
 ;; functions to read data from storage
 
+(define-private (is-paused)
+	(default-to false (from-consensus-buff? bool (unwrap! (contract-call? .upgradable-fungible-token get-data "paused") false)))
+)
+
 (define-private (get-string-32? (key (string-ascii 16)))
 	(from-consensus-buff? (string-ascii 32) (try! (contract-call? .upgradable-fungible-token get-data key)))
 )
@@ -62,6 +69,7 @@
 
 (define-public (buy-tokens (amount uint))
 	(let ((price (unwrap! (get-uint? "price") err-no-price)))
+		(asserts! (not (is-paused)) err-paused)
 		(try! (stx-transfer? (* amount price) tx-sender (contract-call? .upgradable-fungible-token get-contract-owner)))
 		(contract-call? .upgradable-fungible-token impl-mint amount tx-sender)
 	)
@@ -78,5 +86,12 @@
 	(begin
 		(try! (contract-call? .upgradable-fungible-token is-contract-owner contract-caller))
 		(contract-call? .upgradable-fungible-token impl-burn amount who)
+	)
+)
+
+(define-public (owner-set-paused (paused bool))
+	(begin
+		(try! (contract-call? .upgradable-fungible-token is-contract-owner contract-caller))
+		(contract-call? .upgradable-fungible-token set-data "paused" (unwrap-panic (to-consensus-buff? paused)))
 	)
 )

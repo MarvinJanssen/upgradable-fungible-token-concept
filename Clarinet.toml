@@ -4,24 +4,41 @@ description = ''
 authors = []
 telemetry = false
 cache_dir = './.cache'
-requirements = []
+
+[[project.requirements]]
+contract_id = 'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE.sip-010-trait-ft-standard'
+[contracts.sip010-uft-pausing-proxy]
+path = 'contracts/sip010-uft-pausing-proxy.clar'
+clarity_version = 2
+epoch = 2.5
+
+[contracts.sip010-uft-proxy]
+path = 'contracts/sip010-uft-proxy.clar'
+clarity_version = 2
+epoch = 2.5
+
+[contracts.swap]
+path = 'contracts/swap.clar'
+clarity_version = 2
+epoch = 2.5
+
 [contracts.upgradable-fungible-token]
 path = 'contracts/upgradable-fungible-token.clar'
 clarity_version = 2
 epoch = 2.5
 
-[contracts.upgradable-fungible-token-logic]
-path = 'contracts/upgradable-fungible-token-logic.clar'
+[contracts.upgradable-fungible-token-impl]
+path = 'contracts/upgradable-fungible-token-impl.clar'
 clarity_version = 2
 epoch = 2.5
 
-[contracts.upgradable-fungible-token-logic-pausing]
-path = 'contracts/upgradable-fungible-token-logic-pausing.clar'
+[contracts.upgradable-fungible-token-impl-pausing]
+path = 'contracts/upgradable-fungible-token-impl-pausing.clar'
 clarity_version = 2
 epoch = 2.5
 
-[contracts.upgradable-fungible-token-logic-trait]
-path = 'contracts/upgradable-fungible-token-logic-trait.clar'
+[contracts.upgradable-fungible-token-impl-trait]
+path = 'contracts/upgradable-fungible-token-impl-trait.clar'
 clarity_version = 2
 epoch = 2.5
 

@@ -1,4 +1,4 @@
-(define-trait upgradable-fungible-token-logic-trait
+(define-trait upgradable-fungible-token-impl-trait
   (
     ;; Transfer from the caller to a new principal
     (transfer (uint principal principal principal) (response bool uint))

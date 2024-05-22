@@ -1,10 +1,12 @@
 (impl-trait .upgradable-fungible-token-trait.upgradable-fungible-token-trait)
-(use-trait upgradable-fungible-token-logic-trait .upgradable-fungible-token-logic-trait.upgradable-fungible-token-logic-trait)
+(use-trait upgradable-fungible-token-impl-trait .upgradable-fungible-token-impl-trait.upgradable-fungible-token-impl-trait)
+(use-trait sip-010-trait 'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE.sip-010-trait-ft-standard.sip-010-trait)
 
 (define-fungible-token upgradable-token)
 
 (define-data-var contract-owner principal tx-sender)
 (define-data-var current-logic-implementation principal tx-sender)
+(define-data-var current-proxy (optional principal) none)
 
 (define-constant err-not-current-implementation (err u100))
 (define-constant err-not-owner (err u101))
@@ -20,60 +22,64 @@
 	(ok (var-get current-logic-implementation))
 )
 
+(define-read-only (get-current-proxy)
+	(ok (var-get current-proxy))
+)
+
 (define-read-only (is-current-implementation (implementation principal))
 	(ok (asserts! (is-eq implementation (var-get current-logic-implementation)) err-not-current-implementation))
 )
 
-(define-public (transfer (amount uint) (sender principal) (recipient principal) (implementation <upgradable-fungible-token-logic-trait>))
+(define-public (transfer (amount uint) (sender principal) (recipient principal) (implementation <upgradable-fungible-token-impl-trait>))
 	(begin
 		(try! (is-current-implementation (contract-of implementation)))
 		(contract-call? implementation transfer amount sender recipient contract-caller)
 	)
 )
 
-(define-public (transfer-memo (amount uint) (sender principal) (recipient principal) (memo (buff 34)) (implementation <upgradable-fungible-token-logic-trait>))
+(define-public (transfer-memo (amount uint) (sender principal) (recipient principal) (memo (buff 34)) (implementation <upgradable-fungible-token-impl-trait>))
 	(begin
 		(try! (is-current-implementation (contract-of implementation)))
 		(contract-call? implementation transfer-memo amount sender recipient memo contract-caller)
 	)
 )
 
-(define-public (get-name (implementation <upgradable-fungible-token-logic-trait>))
+(define-public (get-name (implementation <upgradable-fungible-token-impl-trait>))
 	(begin
 		(try! (is-current-implementation (contract-of implementation)))
 		(contract-call? implementation get-name)
 	)
 )
 
-(define-public (get-symbol (implementation <upgradable-fungible-token-logic-trait>))
+(define-public (get-symbol (implementation <upgradable-fungible-token-impl-trait>))
 	(begin
 		(try! (is-current-implementation (contract-of implementation)))
 		(contract-call? implementation get-symbol)
 	)
 )
 
-(define-public (get-decimals (implementation <upgradable-fungible-token-logic-trait>))
+(define-public (get-decimals (implementation <upgradable-fungible-token-impl-trait>))
 	(begin
 		(try! (is-current-implementation (contract-of implementation)))
 		(contract-call? implementation get-decimals)
 	)
 )
 
-(define-public (get-balance (who principal) (implementation <upgradable-fungible-token-logic-trait>))
+(define-public (get-balance (who principal) (implementation <upgradable-fungible-token-impl-trait>))
 	(begin
 		(try! (is-current-implementation (contract-of implementation)))
 		(contract-call? implementation get-balance who)
 	)
 )
 
-(define-public (get-total-supply (implementation <upgradable-fungible-token-logic-trait>))
+(define-public (get-total-supply (implementation <upgradable-fungible-token-impl-trait>))
 	(begin
 		(try! (is-current-implementation (contract-of implementation)))
 		(contract-call? implementation get-total-supply)
 	)
 )
 
-(define-public (get-token-uri (implementation <upgradable-fungible-token-logic-trait>))
+(define-public (get-token-uri (implementation <upgradable-fungible-token-impl-trait>))
 	(begin
 		(try! (is-current-implementation (contract-of implementation)))
 		(contract-call? implementation get-token-uri)
@@ -97,9 +103,10 @@
 	)
 )
 
-(define-public (upgrade (new-implementation <upgradable-fungible-token-logic-trait>))
+(define-public (upgrade (new-implementation <upgradable-fungible-token-impl-trait>) (new-proxy (optional <sip-010-trait>)))
 	(begin
 		(try! (is-contract-owner contract-caller))
+		(var-set current-proxy (match new-proxy trait-ref (some (contract-of trait-ref)) none))
 		(ok (var-set current-logic-implementation (contract-of new-implementation)))
 	)
 )
